@@ -21,6 +21,13 @@ ENV/
 .coverage
 htmlcov/
 
+# Node & Frontend Build
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.env.local
+
 # IDE & Editor files
 .vscode/
 .idea/
@@ -29,5 +36,4 @@ htmlcov/
 
 # Distribution / packaging
 build/
-dist/
 *.egg-info/

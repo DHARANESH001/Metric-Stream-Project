@@ -1,285 +1,122 @@
-# Inventory Counter API
+# Inventory Counter — Full Stack Project
 
-A modular, lightweight REST API built with **FastAPI** and **SQLite** that enables small-shop staff and developers to manage inventory items, perform stock adjustments, and automatically detect low-stock thresholds.
-
----
-
-## Features & Business Rules
-
-1. **Item Management**:
-   - Create inventory items with a non-empty name, initial quantity ($\ge 0$), and low-stock threshold ($\ge 0$).
-   - List all items or query a single item by its ID.
-2. **Stock Adjustments**:
-   - **Increase Stock**: Add to an item's stock with a positive integer quantity.
-   - **Decrease Stock**: Deduct from an item's stock with a positive integer quantity.
-   - **Negative Stock Prevention**: Stock decreases that would cause quantity to drop below zero are strictly rejected with HTTP 400 Bad Request.
-   - **Positive Adjustment Invariant**: Adjustment quantities must be positive integers ($> 0$).
-3. **Low-Stock Alerting**:
-   - An item is automatically classified as low stock whenever `quantity <= low_stock_threshold`.
-   - Dedicated endpoint `GET /items/{item_id}/stock-status` for quick threshold checks.
-4. **Isolated Testing**:
-   - Automated pytest suite running against temporary, isolated SQLite databases.
+A modern, responsive full-stack inventory counter system with a **FastAPI + SQLite** backend and a **React + Vite + Tailwind CSS** frontend.
 
 ---
 
 ## Project Structure
 
 ```
-.
-├── aidlc/spaces/default/knowledge/documents/
-│   └── intent.md            # Workshop intent specification
-├── inventory/
-│   ├── __init__.py          # Package declaration & version
-│   ├── database.py          # SQLite engine, sessionmaker, & get_db dependency
-│   ├── models.py            # SQLAlchemy Item model & properties
-│   ├── schemas.py           # Pydantic schemas & input validators
-│   ├── services.py          # Domain logic & business exception handling
-│   ├── routes.py            # FastAPI APIRouter endpoints
-│   └── main.py              # Application factory & global exception handlers
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py          # Pytest fixtures with temporary SQLite DB
-│   └── test_items.py        # 36 unit, integration, concurrency & persistence tests
-├── verify_integration.py    # Live server workflow verification runner
-├── main.py                  # Direct entry point for running the server
-├── pytest.ini               # Pytest configuration
-├── requirements.txt         # Project dependencies
-├── .gitignore               # Ignored files (SQLite DBs, pycache, venv)
+d:/Metric stream Project/
+├── backend/                 # FastAPI REST API & SQLite Database
+│   ├── aidlc/               # Workshop intent specification documents
+│   ├── inventory/           # Application package (models, schemas, routes, services)
+│   │   ├── database.py      # SQLite configuration & session management
+│   │   ├── main.py          # FastAPI application factory & CORS setup
+│   │   ├── models.py        # SQLAlchemy Item model
+│   │   ├── routes.py        # Item CRUD & stock adjustment endpoints
+│   │   ├── schemas.py       # Pydantic schemas with strict validation
+│   │   └── services.py      # Atomic transaction logic & exception handling
+│   ├── tests/               # 36 unit, integration, persistence & concurrency tests
+│   │   ├── conftest.py      # Isolated temporary SQLite database fixture
+│   │   └── test_items.py    # Complete test suite
+│   ├── main.py              # Backend entry point for Uvicorn
+│   ├── pytest.ini           # Pytest configuration
+│   ├── requirements.txt     # Python dependencies
+│   └── verify_integration.py# Live backend integration test runner
+│
+├── frontend/                # React.js + Vite + Tailwind CSS Application
+│   ├── public/              # Static icons & assets
+│   ├── src/
+│   │   ├── components/      # UI components (Table, Modals, Badges, Cards, Sidebar)
+│   │   ├── hooks/           # Custom React hooks (useInventory)
+│   │   ├── pages/           # Dashboard page with live KPIs & table
+│   │   ├── services/        # Centralized Axios client (api.js, inventoryService.js)
+│   │   ├── utils/           # Stock status rules & metric calculation
+│   │   ├── App.jsx          # Main layout & modal orchestration
+│   │   ├── index.css        # Tailwind CSS styles & design system
+│   │   └── main.jsx         # React application entry point
+│   ├── .env                 # VITE_API_BASE_URL=http://127.0.0.1:8000
+│   ├── package.json         # Frontend dependencies & build scripts
+│   └── vite.config.js       # Vite & Tailwind configuration with proxy
+│
+├── .gitignore               # Root git exclusions for Python, SQLite, & Node
 └── README.md                # Project documentation
 ```
 
 ---
 
-## Prerequisites
+## Getting Started
 
-- **Python 3.10+** (Python 3.14+ compatible)
-- No Docker or external database servers required.
+### 1. Run the Backend (Python FastAPI)
 
----
-
-## Installation & Setup
-
-1. **Clone or Navigate to the Workspace**:
-   ```bash
-   cd "d:/Metric stream Project"
+1. Open a terminal and navigate to `backend/`:
+   ```powershell
+   cd "d:/Metric stream Project/backend"
    ```
 
-2. **Create and Activate a Virtual Environment** (Optional but recommended):
-   ```bash
-   python -m venv .venv
+2. Activate the virtual environment:
+   ```powershell
    # Windows PowerShell:
-   .venv\Scripts\Activate.ps1
-   # Linux/macOS:
-   source .venv/bin/activate
+   ..\.venv\Scripts\Activate.ps1
    ```
 
-3. **Install Dependencies**:
-   ```bash
+3. Install dependencies (if not already installed):
+   ```powershell
    pip install -r requirements.txt
    ```
 
----
+4. Start the backend server:
+   ```powershell
+   python main.py
+   # Or directly with Uvicorn:
+   uvicorn main:app --reload
+   ```
 
-## Running the Application
-
-Start the local Uvicorn development server:
-
-```bash
-python main.py
-```
-Or directly with Uvicorn:
-```bash
-uvicorn inventory.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-Once started:
-- **API Base URL**: `http://127.0.0.1:8000`
+- **Backend Base URL**: `http://127.0.0.1:8000`
 - **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
-- **ReDoc Documentation**: `http://127.0.0.1:8000/redoc`
+- **Health Endpoint**: `GET /`
+
+5. Run automated backend tests:
+   ```powershell
+   python -m pytest -v
+   ```
 
 ---
 
-## Running the Automated Tests
+### 2. Run the Frontend (React + Vite)
 
-Run the full pytest suite with isolated temporary SQLite databases:
+1. Open a second terminal and navigate to `frontend/`:
+   ```powershell
+   cd "d:/Metric stream Project/frontend"
+   ```
 
-```bash
-pytest
-```
+2. Install dependencies (if not already installed):
+   ```powershell
+   npm install
+   ```
 
-To run with verbose output and coverage:
-```bash
-pytest -v
-```
+3. Start the frontend development server:
+   ```powershell
+   npm run dev
+   ```
 
----
+- **Frontend URL**: `http://localhost:5173/`
 
-## API Endpoints Reference
-
-### 1. Health & Root Info
-- **Endpoint**: `GET /`
-- **Description**: Verifies service status and provides documentation link.
-- **Response**: `200 OK`
-  ```json
-  {
-    "service": "Inventory Counter API",
-    "version": "0.1.0",
-    "status": "healthy",
-    "documentation": "/docs"
-  }
-  ```
+4. Build for production:
+   ```powershell
+   npm run build
+   ```
 
 ---
 
-### 2. Create Inventory Item
-- **Endpoint**: `POST /items`
-- **Status Code**: `201 Created`
-- **Request Body**:
-  ```json
-  {
-    "name": "Mechanical Keyboard",
-    "initial_quantity": 25,
-    "low_stock_threshold": 5
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "id": 1,
-    "name": "Mechanical Keyboard",
-    "quantity": 25,
-    "low_stock_threshold": 5,
-    "is_low_stock": false,
-    "created_at": "2026-10-20T18:00:00Z",
-    "updated_at": "2026-10-20T18:00:00Z"
-  }
-  ```
-- **Validation Errors**:
-  - Empty or whitespace name returns `422 Unprocessable Entity`.
-  - Negative initial quantity or threshold returns `422 Unprocessable Entity`.
+## Core Features
 
----
-
-### 3. List All Items
-- **Endpoint**: `GET /items`
-- **Query Parameters**:
-  - `skip` (int, default: 0): Offset for pagination.
-  - `limit` (int, default: 100): Maximum records to retrieve.
-- **Status Code**: `200 OK`
-- **Response**:
-  ```json
-  [
-    {
-      "id": 1,
-      "name": "Mechanical Keyboard",
-      "quantity": 25,
-      "low_stock_threshold": 5,
-      "is_low_stock": false,
-      "created_at": "2026-10-20T18:00:00Z",
-      "updated_at": "2026-10-20T18:00:00Z"
-    }
-  ]
-  ```
-
----
-
-### 4. Get Item by ID
-- **Endpoint**: `GET /items/{item_id}`
-- **Status Code**: `200 OK` (or `404 Not Found`)
-- **Response**:
-  ```json
-  {
-    "id": 1,
-    "name": "Mechanical Keyboard",
-    "quantity": 25,
-    "low_stock_threshold": 5,
-    "is_low_stock": false,
-    "created_at": "2026-10-20T18:00:00Z",
-    "updated_at": "2026-10-20T18:00:00Z"
-  }
-  ```
-
----
-
-### 5. Increase Stock
-- **Endpoint**: `POST /items/{item_id}/increase`
-- **Status Code**: `200 OK`
-- **Request Body**:
-  ```json
-  {
-    "amount": 10
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "id": 1,
-    "name": "Mechanical Keyboard",
-    "quantity": 35,
-    "low_stock_threshold": 5,
-    "is_low_stock": false,
-    "adjustment": 10,
-    "action": "increase",
-    "message": "Stock increased by 10. New quantity: 35."
-  }
-  ```
-
----
-
-### 6. Decrease Stock
-- **Endpoint**: `POST /items/{item_id}/decrease`
-- **Status Code**: `200 OK`
-- **Request Body**:
-  ```json
-  {
-    "amount": 32
-  }
-  ```
-- **Response** (When stock falls to or below threshold):
-  ```json
-  {
-    "id": 1,
-    "name": "Mechanical Keyboard",
-    "quantity": 3,
-    "low_stock_threshold": 5,
-    "is_low_stock": true,
-    "adjustment": 32,
-    "action": "decrease",
-    "message": "Stock decreased by 32. New quantity: 3. (Low stock threshold reached!)"
-  }
-  ```
-- **Negative Stock Error Response** (`400 Bad Request`):
-  ```json
-  {
-    "detail": "Cannot decrease stock by 100. Current stock is 3. Stock must never drop below zero."
-  }
-  ```
-
----
-
-### 7. Check Low-Stock Status
-- **Endpoint**: `GET /items/{item_id}/stock-status`
-- **Status Code**: `200 OK`
-- **Response**:
-  ```json
-  {
-    "item_id": 1,
-    "name": "Mechanical Keyboard",
-    "quantity": 3,
-    "low_stock_threshold": 5,
-    "is_low_stock": true,
-    "status_message": "Item 'Mechanical Keyboard' is low on stock! Current quantity (3) is at or below threshold (5)."
-  }
-  ```
-
----
-
-## Error Codes Summary
-
-| Status Code | Meaning | Example Trigger |
-| :--- | :--- | :--- |
-| **200 OK** | Success | Item fetched, stock adjusted, or status retrieved |
-| **201 Created** | Resource Created | New item successfully stored in database |
-| **400 Bad Request** | Business Invariant Violation | Attempting to decrease stock below 0, or passing non-positive adjustments |
-| **404 Not Found** | Missing Resource | Requesting an item ID that does not exist |
-| **422 Unprocessable Entity** | Schema Validation Failure | Empty item name, negative initial quantity, or invalid JSON payload |
+- **Live Dynamic KPI Cards**: Instant calculation of total items, total units, low-stock count, and out-of-stock count.
+- **Stock Status Badges**:
+  - `In Stock` (Green): Current stock exceeds alert threshold.
+  - `Low Stock` (Amber): Stock is at or below alert threshold ($0 < quantity \le threshold$).
+  - `Out of Stock` (Red): Quantity equals 0.
+- **Atomic Stock Adjustments**: Increase and Decrease actions backed by atomic conditional updates preventing negative stock.
+- **Full Search, Filter & Sort**: Real-time filtering by item name, status pills, and column sorting.
+- **Responsive Layout**: Desktop sidebar with mobile drawer navigation and card views.
